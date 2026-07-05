@@ -1,0 +1,217 @@
+<apex:page controller="PortfolioPageController"
+           sidebar="false"
+           showHeader="false"
+           standardStylesheets="false"
+           docType="html-5.0"
+           applyHtmlTag="false"
+           applyBodyTag="false">
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{!IF(hasAccount, account.Name, 'Portfolio')}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 32px 16px;
+        }
+
+        /* ── Wrapper ────────────────────────────────── */
+        .portfolio-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            background: #ffffff;
+        }
+
+        /* ── Header ─────────────────────────────────── */
+        .portfolio-header {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b4f72 55%, #2980b9 100%);
+            padding: 52px 32px 44px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .avatar-circle {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            border: 3px solid rgba(255,255,255,0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 22px;
+        }
+        .avatar-initials  { font-size: 38px; font-weight: 700; letter-spacing: 3px; color: #fff; }
+        .portfolio-name   { font-size: 2.4rem; font-weight: 700; margin-bottom: 10px; }
+        .portfolio-title  { font-size: 1.15rem; color: rgba(255,255,255,0.88); font-style: italic; margin-bottom: 14px; }
+        .portfolio-location { font-size: 0.95rem; color: rgba(255,255,255,0.72); }
+
+        /* ── Sections ────────────────────────────────── */
+        .portfolio-section {
+            padding: 32px 36px;
+            border-bottom: 1px solid #eef2f7;
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1b4f72;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #2980b9;
+            display: inline-block;
+            margin-bottom: 18px;
+        }
+        .about-text { font-size: 1rem; line-height: 1.85; color: #444; white-space: pre-wrap; }
+
+        /* ── Stats Row ───────────────────────────────── */
+        .portfolio-stats {
+            display: flex;
+            background: #f4f7fb;
+            border-bottom: 1px solid #eef2f7;
+        }
+        .stat-card {
+            flex: 1;
+            padding: 28px 20px;
+            text-align: center;
+            border-right: 1px solid #dce8f3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+        .stat-card:last-child { border-right: none; }
+        .stat-card:hover      { background: #e2eef8; }
+        .stat-icon-wrap {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: #fff;
+        }
+        .stat-icon-wrap.domain     { background: #1b4f72; }
+        .stat-icon-wrap.experience { background: #117a65; }
+        .stat-icon-wrap.status     { background: #884ea0; }
+        .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #8a9ab0; font-weight: 600; }
+        .stat-value { font-size: 1.05rem; font-weight: 700; color: #1b4f72; }
+
+        /* ── Contact ─────────────────────────────────── */
+        .contact-section { border-bottom: none; }
+        .contact-links   { display: flex; flex-wrap: wrap; gap: 16px; }
+        .contact-item {
+            display: inline-flex; align-items: center; gap: 10px;
+            text-decoration: none; color: #2980b9;
+            font-size: 0.95rem; font-weight: 600;
+            padding: 10px 22px;
+            border: 2px solid #2980b9; border-radius: 50px;
+            transition: all 0.2s ease;
+        }
+        .contact-item:hover { background: #2980b9; color: #fff; }
+
+        /* ── State Boxes ─────────────────────────────── */
+        .state-box {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 16px; padding: 60px 32px;
+            border-radius: 12px; text-align: center;
+            max-width: 520px; margin: 40px auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .config-notice { background: #fef9e7; border: 1px solid #f9d878; color: #5c4a1e; }
+        .config-notice h2 { font-size: 1.2rem; }
+        .config-notice code {
+            display: inline-block;
+            background: rgba(0,0,0,0.08);
+            padding: 6px 12px; border-radius: 6px;
+            font-size: 0.9rem; word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Not Configured ─────────────────────────── -->
+    <apex:outputPanel layout="block" styleClass="state-box config-notice" rendered="{!NOT(hasAccount)}">
+        <h2>&#9881; Portfolio Not Configured</h2>
+        <p>Pass a valid Account ID in the URL:</p>
+        <code>/apex/PortfolioPage?id=&lt;AccountId&gt;</code>
+    </apex:outputPanel>
+
+    <!-- ── Portfolio ──────────────────────────────── -->
+    <apex:outputPanel layout="block" styleClass="portfolio-wrapper" rendered="{!hasAccount}">
+
+        <!-- Header -->
+        <div class="portfolio-header">
+            <div class="avatar-circle">
+                <span class="avatar-initials">{!initials}</span>
+            </div>
+            <h1 class="portfolio-name">{!account.Name}</h1>
+
+            <apex:outputPanel layout="block" rendered="{!NOT(ISBLANK(account.Site))}">
+                <p class="portfolio-title">{!account.Site}</p>
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="block" rendered="{!hasLocation}">
+                <p class="portfolio-location">&#128205; {!location}</p>
+            </apex:outputPanel>
+        </div>
+
+        <!-- About Me -->
+        <apex:outputPanel layout="block" styleClass="portfolio-section"
+                          rendered="{!NOT(ISBLANK(account.Description))}">
+            <h2 class="section-title">About Me</h2>
+            <p class="about-text">{!account.Description}</p>
+        </apex:outputPanel>
+
+        <!-- Stats Row -->
+        <div class="portfolio-stats">
+            <apex:outputPanel layout="block" styleClass="stat-card"
+                              rendered="{!NOT(ISBLANK(account.Industry))}">
+                <div class="stat-icon-wrap domain">&#9889;</div>
+                <span class="stat-label">Domain</span>
+                <span class="stat-value">{!account.Industry}</span>
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="block" styleClass="stat-card"
+                              rendered="{!hasExperience}">
+                <div class="stat-icon-wrap experience">&#9201;</div>
+                <span class="stat-label">Experience</span>
+                <span class="stat-value">{!experience}</span>
+            </apex:outputPanel>
+
+            <apex:outputPanel layout="block" styleClass="stat-card"
+                              rendered="{!NOT(ISBLANK(account.Type))}">
+                <div class="stat-icon-wrap status">&#10003;</div>
+                <span class="stat-label">Status</span>
+                <span class="stat-value">{!account.Type}</span>
+            </apex:outputPanel>
+        </div>
+
+        <!-- Contact -->
+        <apex:outputPanel layout="block" styleClass="portfolio-section contact-section"
+                          rendered="{!hasContact}">
+            <h2 class="section-title">Contact</h2>
+            <div class="contact-links">
+                <apex:outputPanel rendered="{!NOT(ISBLANK(account.Phone))}">
+                    <a href="tel:{!HTMLENCODE(account.Phone)}" class="contact-item">
+                        &#128222; {!account.Phone}
+                    </a>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!NOT(ISBLANK(account.Website))}">
+                    <a href="{!HTMLENCODE(account.Website)}" target="_blank"
+                       rel="noopener noreferrer" class="contact-item">
+                        &#127760; Portfolio / GitHub
+                    </a>
+                </apex:outputPanel>
+            </div>
+        </apex:outputPanel>
+
+    </apex:outputPanel>
+
+</body>
+</html>
+</apex:page>

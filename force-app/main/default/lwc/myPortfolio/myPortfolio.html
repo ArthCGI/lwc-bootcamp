@@ -1,0 +1,107 @@
+<template>
+
+    <!-- ── Not Configured ─────────────────────────────────── -->
+    <template lwc:if={noConfig}>
+        <div class="state-box config-notice">
+            <lightning-icon icon-name="utility:settings" size="medium"></lightning-icon>
+            <p>Open <strong>Edit Page</strong> and set the <strong>Portfolio Account ID</strong> property to load your portfolio.</p>
+        </div>
+    </template>
+
+    <!-- ── Loading ────────────────────────────────────────── -->
+    <template lwc:if={isLoading}>
+        <div class="state-box">
+            <lightning-spinner alternative-text="Loading Portfolio" size="large"></lightning-spinner>
+        </div>
+    </template>
+
+    <!-- ── Error ──────────────────────────────────────────── -->
+    <template lwc:if={hasError}>
+        <div class="state-box error-box">
+            <lightning-icon icon-name="utility:error" size="large" variant="error"></lightning-icon>
+            <p>Unable to load portfolio. Please verify the Account ID is correct.</p>
+        </div>
+    </template>
+
+    <!-- ── Portfolio ──────────────────────────────────────── -->
+    <template lwc:if={portfolio}>
+        <div class="portfolio-wrapper">
+
+            <!-- Hero Header -->
+            <div class="portfolio-header">
+                <div class="avatar-circle">
+                    <span class="avatar-initials">{initials}</span>
+                </div>
+                <h1 class="portfolio-name">{portfolio.Name}</h1>
+                <template lwc:if={portfolio.Site}>
+                    <p class="portfolio-title">{portfolio.Site}</p>
+                </template>
+                <template lwc:if={hasLocation}>
+                    <p class="portfolio-location">&#128205; {location}</p>
+                </template>
+            </div>
+
+            <!-- About Me -->
+            <template lwc:if={portfolio.Description}>
+                <div class="portfolio-section">
+                    <h2 class="section-title">About Me</h2>
+                    <p class="about-text">{portfolio.Description}</p>
+                </div>
+            </template>
+
+            <!-- Stats Row -->
+            <div class="portfolio-stats">
+                <template lwc:if={portfolio.Industry}>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap domain">
+                            <lightning-icon icon-name="utility:knowledge_base" size="small" variant="inverse"></lightning-icon>
+                        </div>
+                        <span class="stat-label">Domain</span>
+                        <span class="stat-value">{portfolio.Industry}</span>
+                    </div>
+                </template>
+                <template lwc:if={portfolio.NumberOfEmployees}>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap experience">
+                            <lightning-icon icon-name="utility:clock" size="small" variant="inverse"></lightning-icon>
+                        </div>
+                        <span class="stat-label">Experience</span>
+                        <span class="stat-value">{experience}</span>
+                    </div>
+                </template>
+                <template lwc:if={portfolio.Type}>
+                    <div class="stat-card">
+                        <div class="stat-icon-wrap status">
+                            <lightning-icon icon-name="utility:check" size="small" variant="inverse"></lightning-icon>
+                        </div>
+                        <span class="stat-label">Status</span>
+                        <span class="stat-value">{portfolio.Type}</span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Contact -->
+            <template lwc:if={hasContact}>
+                <div class="portfolio-section contact-section">
+                    <h2 class="section-title">Contact</h2>
+                    <div class="contact-links">
+                        <template lwc:if={portfolio.Phone}>
+                            <a href={phoneLink} class="contact-item">
+                                <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
+                                <span>{portfolio.Phone}</span>
+                            </a>
+                        </template>
+                        <template lwc:if={portfolio.Website}>
+                            <a href={portfolio.Website} target="_blank" rel="noopener noreferrer" class="contact-item">
+                                <lightning-icon icon-name="utility:world" size="x-small"></lightning-icon>
+                                <span>Portfolio / GitHub</span>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </template>
+
+</template>
